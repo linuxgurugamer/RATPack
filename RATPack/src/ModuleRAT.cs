@@ -222,6 +222,7 @@ namespace RATPack
 			if (_animation!= null && _animation.isPlaying)
 				_animation.Stop ();
 			if (_animation != null && _deployAnim != null) {
+				_deployAnim.time = _deployAnim.length;
 				_deployAnim.speed = -1.5f;
 				_animation.Play (deployAnimation);
 			}
