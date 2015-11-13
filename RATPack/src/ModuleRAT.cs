@@ -1,4 +1,6 @@
 ﻿/*
+ * Copyright 2015 SatNet
+ * 
  * This file is subject to the included LICENSE.md file. 
  */
 
@@ -10,6 +12,9 @@ namespace RATPack
 {
 	public class ModuleRAT: PartModule
 	{
+		const float MAX_CHARGE_RATE = 5f;
+		const float MAX_AIRSPEED = 2000f;
+
 		[KSPField]
 		public float minDensity = 0.001f;
 
@@ -22,7 +27,7 @@ namespace RATPack
 		[KSPField]
 		public string deployAnimation = "Deploy";
 
-		[KSPField(isPersistant=true,guiActive=true,guiName="Active")]
+		[KSPField(isPersistant=true,guiActive=true,guiName="RAT Active")]
 		public bool deployed = false;
 
 		[KSPField]
@@ -34,8 +39,14 @@ namespace RATPack
 		[KSPField(guiActive=true,guiName="Charge Flow",guiFormat="F4")]
 		public float chargePerSec = 1.0f;
 
+		[KSPField(guiActive=true,guiName="Blocked",guiActiveEditor=true)]
+		public string blocked="False";
+
 		[KSPField]
 		public float generatorAnimationSpeed = 5.0f;
+
+		[KSPField]
+		public string transformName = "";
 
 		/// <summary>
 		/// The airspeed curve. Determines how much charge we get at a given indicated airspeed.
@@ -48,6 +59,17 @@ namespace RATPack
 				new Keyframe(100.0f,1.0f,0.0f,0.0f),
 				new Keyframe(1600.0f,0.1f,0.0f,0.0f)
 			});
+		/// <summary>
+		/// The atmosphere curve. Determines how much we change the charge based on atmosphere.
+		/// </summary>
+		[KSPField]
+		public FloatCurve atmosphereCurve = new FloatCurve(new Keyframe[]
+			{
+				new Keyframe(0.0f,0.0f,0.0f,0.0f),
+				new Keyframe(0.00005f,0.0f,0.0f,0.0f),
+				new Keyframe(0.1f,0.3f,0.0f,1.2f),
+				new Keyframe(1.0f,1.0f,0.0f,0.0f),
+			});
 
 		private double 			_lastTime = 0.0d;
 		private bool 			_deploying = false;
@@ -55,6 +77,13 @@ namespace RATPack
 		private AnimationState 	_deployAnim = null;
 		private Animation 		_animation = null;
 		private Part			_chargeProvider = null;
+		private List<Transform> _chargeTransform = new List<Transform>();
+		private Rect 			_windowPos = new Rect();
+		private bool 			_powerCurveView = false;
+		private bool 			_maxPowerCurveScale = true;
+		private Graph 			_powerGraph 			= new Graph(500,400);
+		private int 			_winID = 1;
+
 		/// <summary>
 		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called
 		///  before OnUpdate or OnFixedUpdate are ever called.
@@ -71,8 +100,15 @@ namespace RATPack
 			}
 			if (deployed && _deployAnim != null) {
 				_animation.Play (deployAnimation);
-				Events ["ToggleDeploy"].guiName = "Deactivate";
+				Events ["ToggleDeploy"].guiName = "Deactivate RAT";
 			}
+			_winID = GUIUtility.GetControlID (FocusType.Passive);
+
+			if (transformName.Length > 0)
+				_chargeTransform.AddRange(part.FindModelTransforms (transformName));
+
+			if (_chargeTransform.Count == 0)
+				_chargeTransform.Add (part.transform);
 		}
 		/// <summary>
 		/// Called on physics update. Add the appropriate amount of charge.
@@ -95,6 +131,7 @@ namespace RATPack
 						_animation.Play (generatorAnimation);
 					}
 				}
+				OcclusionFactor ();
 				return;
 			}
 			if (managePartCharge) {
@@ -109,20 +146,44 @@ namespace RATPack
 			double deltaTime = time - _lastTime;
 			_lastTime = time;
 
-			// Use indicated airspeed. It takes air density into account which is what we want.
-			double curveFit = (double)airspeedCurve.Evaluate ((float)vessel.indicatedAirSpeed);
+			// Take the vessel speed then account for orientation, pressure, and occlusion.
+			double partSpeed = vessel.speed;
+			double orientationFactorTotal = 0d;
+			double orientationFactorCount = 0d;
+			double orientationFactor = 1d;
+			foreach (Transform trans in _chargeTransform) {
+				orientationFactorCount++;
+				double speedComponent = Vector3d.Dot (vessel.srf_velocity.normalized, trans.up.normalized);
+				if (speedComponent > 0.0d)
+					orientationFactorTotal += speedComponent;
+				else
+					orientationFactorTotal += -speedComponent * 0.5;
+			}
+			if (orientationFactorCount > 0d) {
+				orientationFactor = orientationFactorTotal / orientationFactorCount;
+			}
+			double occlusionFactor = OcclusionFactor ();
+
+			double atmoCurveFit = (double)atmosphereCurve.Evaluate ((float)vessel.atmDensity);
+
+			partSpeed *= orientationFactor;
+			partSpeed *= atmoCurveFit;
+
+			double curveFit = (double)airspeedCurve.Evaluate ((float)partSpeed);
+
 			chargePerSec = 0.0f;
 
-			if (curveFit > 0.0f && !part.ShieldedFromAirstream) {
+			if (curveFit > 0.0f && atmoCurveFit > 0.0f && occlusionFactor > 0.0f) {
 				if (deployed) {
+					double chargePct = curveFit * occlusionFactor;
 					if (_animation != null && _genAnim != null) {
 						if (!_animation.isPlaying) {
 							_animation.Play (generatorAnimation);
 						} else {
-							_genAnim.speed = 1.0f + (float)curveFit * generatorAnimationSpeed;
+							_genAnim.speed = (float)chargePct * generatorAnimationSpeed;
 						}
 					}
-					chargePerSec = (float)(chargeRate * curveFit);
+					chargePerSec = (float)(chargeRate * chargePct);
 					if (chargePerSec > 0.0f) {
 						double charge = chargePerSec * (deltaTime);
 						part.RequestResource ("ElectricCharge", -charge);
@@ -140,6 +201,148 @@ namespace RATPack
 				if (_animation!= null && _animation.IsPlaying(generatorAnimation))
 					_animation.Stop ();
 			}
+		}
+
+		/// <summary>
+		/// Calculates the occlusion factor.
+		/// </summary>
+		/// <returns>The factor.</returns>
+		private double OcclusionFactor()
+		{
+			double factor = 1.0d;
+			double total = 0.0d;
+			double count = 0.0d;
+			string hitobj = "";
+			foreach (Transform trans in _chargeTransform) {
+				Vector3 origin = trans.position;
+				if (trans == part.transform) {
+					origin += trans.up * part.collider.bounds.size.magnitude;
+				}
+				Ray ray = new Ray (origin, trans.up);
+				RaycastHit hit = new RaycastHit ();
+				if (Physics.Raycast (ray, out hit, 2.0f)) {
+					total += (double)(hit.distance / 2.0f);
+					count++;
+					if (hit.rigidbody != null) {
+						hitobj = hit.rigidbody.name;
+					}
+				}
+			}
+
+			if (count > 0d) {
+				factor = Math.Log10(total / count * 9.0d + 1.0d);
+				blocked = ((1.0f - factor) * 100.0f).ToString("F2") + "% by " + hitobj;
+			} else {
+				blocked = "False";
+			}
+
+			return factor;
+		}
+
+		/// <summary>
+		/// Lock the Controls.
+		/// </summary>
+		private void ControlLock()
+		{
+			InputLockManager.SetControlLock (ControlTypes.EDITOR_SOFT_LOCK, "ModuleRAT");
+		}
+
+		/// <summary>
+		/// Unlock the Controls.
+		/// </summary>
+		private void ControlUnlock()
+		{
+			InputLockManager.RemoveControlLock("ModuleRAT");
+		}
+
+		public void OnDraw()
+		{
+			_windowPos = GUILayout.Window (_winID, _windowPos, OnWindow, part.partInfo.title);
+			if (_windowPos.Contains (Event.current.mousePosition)) {
+				ControlLock ();
+			} else {
+				ControlUnlock();
+			}
+		}
+
+		/// <summary>
+		/// Draws the window.
+		/// </summary>
+		/// <param name="windowID">Window ID</param>
+		public void OnWindow(int windowID)
+		{
+			GUILayout.BeginVertical (GUILayout.Width(500.0f),GUILayout.Height(410.0f));
+			GUILayout.Label ("Electric Charge / second vs. Airspeed");
+			GUILayout.Box (_powerGraph.getImage());
+			GUILayout.Label ("Vertical Ticks - 1 EC/s");
+			GUILayout.Label ("Horizontal Ticks - 100 m/s");
+			if (_maxPowerCurveScale) {
+				GUILayout.Label ("Showing common scale. Suitable for comparing RATs.");
+			} else {
+				GUILayout.Label ("Showing fit scale. Minimum for showing this one RAT.");
+			}
+			GUILayout.BeginHorizontal ();
+
+			if (GUILayout.Button ("Close")) {
+				TogglePowerCurve ();
+			}
+			if (GUILayout.Button (_maxPowerCurveScale ? "Fit Scale" : "Common Scale")) {
+				_maxPowerCurveScale = !_maxPowerCurveScale;
+				DrawPowerGraph ();
+			}
+			GUILayout.EndHorizontal ();
+			GUILayout.EndVertical ();
+			GUI.DragWindow ();
+		}
+
+		/// <summary>
+		/// Draws the power graph.
+		/// </summary>
+		public void DrawPowerGraph()
+		{
+			float max = airspeedCurve.maxTime;
+			float min = airspeedCurve.minTime;
+			float amin = 0.0f;
+			float amax = 0.0f;
+			float tmin = 0.0f;
+			float tmax = 0.0f;
+			airspeedCurve.FindMinMaxValue (out amin, out amax, out tmin, out tmax);
+
+			float chargeMax = chargeRate * amax;
+
+			if (_maxPowerCurveScale) {
+				max = MAX_AIRSPEED;
+				chargeMax = MAX_CHARGE_RATE;
+			}
+
+			float increment = max / _powerGraph.getImage ().width;
+			float chargeInc = (float) _powerGraph.getImage ().height / chargeMax;
+			_powerGraph.reset ();
+			_powerGraph.drawLineOnGraph (x => (double)(airspeedCurve.Evaluate((float)x * increment)*chargeRate), chargeMax, amin, _powerGraph.getImage().width, Color.red  );
+			for (float vert = 0.0f; vert < max; vert += 100) {
+				int pos = (int)(vert / increment);
+				_powerGraph.drawVerticalLine (pos, Color.yellow, 10);
+			}
+			for (float horiz = 0.0f; horiz < chargeMax; horiz++) {
+				int pos = (int)(horiz * chargeInc);
+				_powerGraph.drawHorizontalLine (pos, Color.cyan, 10);
+			}
+			_powerGraph.Apply ();
+		}
+
+
+		[KSPEvent(guiActive=true,guiName="Power Curve Graph",guiActiveEditor=true)]
+		public void TogglePowerCurve()
+		{
+			DrawPowerGraph ();
+			_powerCurveView = !_powerCurveView;
+			if (_powerCurveView) {
+				RenderingManager.AddToPostDrawQueue (0, OnDraw);
+			} else {
+				RenderingManager.RemoveFromPostDrawQueue (0, OnDraw);
+				ControlUnlock ();
+			}
+
 		}
 
 		/// <summary>
@@ -211,7 +414,7 @@ namespace RATPack
 					}
 				}
 			}
-			Events ["ToggleDeploy"].guiName = "Deactivate";
+			Events ["ToggleDeploy"].guiName = "Deactivate RAT";
 		}
 
 		/// <summary>
@@ -229,7 +432,7 @@ namespace RATPack
 			_deploying = false;
 			deployed = false;
 
-			Events ["ToggleDeploy"].guiName = "Activate";
+			Events ["ToggleDeploy"].guiName = "Activate RAT";
 		}
 
 		/// <summary>
@@ -253,7 +456,7 @@ namespace RATPack
 		/// <summary>
 		/// Activate/deactivates the RAT.
 		/// </summary>
-		[KSPEvent(guiActive=true,guiName="Activate",unfocusedRange=5f,guiActiveUnfocused=true,guiActiveEditor=true)]
+		[KSPEvent(guiActive=true,guiName="Activate RAT",unfocusedRange=5f,guiActiveUnfocused=true,guiActiveEditor=true)]
 		public void ToggleDeploy()
 		{
 			if (deployed || _deploying)

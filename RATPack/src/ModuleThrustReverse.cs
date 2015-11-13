@@ -1,4 +1,6 @@
 ﻿/*
+ * Copyright 2015 SatNet
+ * 
  * This file is subject to the included LICENSE.md file. 
  */
 
@@ -36,6 +38,7 @@ namespace RATPack
 		private Animation 			_animation = null;
 		private Part 				_engine = null;
 		private bool				_exhaustDamage = false;
+		private bool				_exhaustFix = false;
 		private List<ParticleEmitter> _emitList = new List<ParticleEmitter> ();
 		/// <summary>
 		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called
@@ -110,7 +113,7 @@ namespace RATPack
 				foreach (PartModule pm in _engine.Modules) {
 					if (pm is ModuleEngines) {
 						ModuleEngines eng = (ModuleEngines)pm;
-						if (eng != null) {
+						if (eng != null && !eng.flameout) {
 							thrust += eng.resultingThrust;
 							maxThrust += eng.maxThrust;
 						}
@@ -140,7 +143,7 @@ namespace RATPack
 				foreach (PartModule pm in _engine.Modules) {
 					if (pm is ModuleEngines) {
 						ModuleEngines eng = (ModuleEngines)pm;
-						if (eng != null && eng.resultingThrust != 0.0f) {
+						if (eng != null && eng.resultingThrust != 0.0f && !eng.flameout) {
 							List<Transform> engTrans = eng.thrustTransforms;
 							float thrustPerNozzle = eng.resultingThrust / engTrans.Count;
 							foreach (Transform engOutput in engTrans) {
@@ -152,6 +155,17 @@ namespace RATPack
 			} else {
 				part.Effect (reversingEffect, 0.0f);
 				effectiveThrust = 0.0f;
+				if (!_animation.isPlaying && _exhaustFix) {
+					foreach (PartModule pm in _engine.Modules) {
+						if (pm is ModuleEngines) {
+							ModuleEngines eng = (ModuleEngines)pm;
+							if (eng != null) {
+								eng.exhaustDamage = _exhaustDamage;
+								_exhaustFix = false;
+							}
+						}
+					}
+				}
 			}
 
 		}
@@ -213,14 +227,12 @@ namespace RATPack
 			_deployAnim.time = _deployAnim.length;
 			_deployAnim.speed = -1.0f;
 			_animation.Play ();
+			_exhaustFix = true;
 			List<string> runningEffect = new List<string> ();
 			_emitList.Clear ();
 			foreach (PartModule pm in _engine.Modules) {
 				if (pm is ModuleEngines) {
 					ModuleEngines eng = (ModuleEngines)pm;
-					if (eng != null) {
-						eng.exhaustDamage = _exhaustDamage;
-					}
 					if (eng is ModuleEnginesFX) {
 						ModuleEnginesFX engFx = (ModuleEnginesFX)eng;
 						if (engFx != null) {
