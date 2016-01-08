@@ -44,12 +44,7 @@ namespace RATPack
 		}
 	}
 
-	internal class AudioSequence
-	{
-		public AudioSequence Next { get; set; }
-		public string ClipUrl { get; set; }
-		public AudioClip Clip { get; set; }
-	}
+
 
 	internal class TAWSPreset
 	{
@@ -153,7 +148,9 @@ namespace RATPack
 		[KSPField(guiActive=true,guiActiveEditor=true,guiName="Preset")]
 		public string presetString = "Default";
 
-		private AudioSequence 			_terrain = null;
+		[KSPField]
+		public  AudioSequence 			terrainAudio = new AudioSequence();
+
 		private AudioSequence 			_playing = null;
 		private AudioSource 			_audioSource = null;
 		private double 					_prevTime = 0.0d;
@@ -181,10 +178,9 @@ namespace RATPack
 		public override void OnStart(StartState state)
 		{
 			_audioSource = gameObject.AddComponent<AudioSource> ();
-			_terrain = new AudioSequence ();
-			_terrain.Clip = GameDatabase.Instance.GetAudioClip ("RATPack/Sounds/Cockpit/terrain-warn");
-			_terrain.Next = new AudioSequence ();
-			_terrain.Next.Clip = GameDatabase.Instance.GetAudioClip ("RATPack/Sounds/Cockpit/pull-up-warn");
+			if (terrainAudio != null && terrainAudio.sound == null) {
+				terrainAudio = part.partInfo.partPrefab.Modules.GetModules<ModuleTAWS> ()[0].terrainAudio;
+			}
 			_audioSource.dopplerLevel = 0.0f;
 			_audioSource.panLevel = 0.0f;
 			_audioSource.enabled = true;
@@ -228,10 +224,11 @@ namespace RATPack
 			} else {
 				presetString = taws.Title;
 			}
+			CheckTerrainWarning ();
 		}
 
 		/// <summary>
-		/// Called on physics update. Add the appropriate amount of charge.
+		/// Called on physics update. Determine if we should issue a warning.
 		/// </summary>
 		public void FixedUpdate()
 		{
@@ -348,7 +345,7 @@ namespace RATPack
 		}
 
 		/// <summary>
-		/// Plays the Terrain warning.
+		/// Sets the Terrain warning.
 		/// </summary>
 		private void TerrainWarning()
 		{
@@ -357,20 +354,27 @@ namespace RATPack
 			} else {
 				_warningActiveModule = this;
 			}
-
-			if (audioOutput && !_audioSource.isPlaying) {
-				if (_playing == null) {
-					_playing = _terrain;
+		}
+		/// <summary>
+		/// Plays the Terrain warning if conditions are met.
+		/// </summary>
+		private void CheckTerrainWarning()
+		{
+			if (_warningActiveModule == this) {
+				if (audioOutput && !_audioSource.isPlaying && terrainAudio != null) {
+					if (_playing == null) {
+						_playing = terrainAudio;
+					}
+					if (_playing.sound != null) {
+						_audioSource.clip = _playing.sound;
+						_audioSource.Play ();
+					}
+					if (_playing != null) {
+						_playing = _playing.next;
+					}
 				}
-				if (_playing.Clip != null) {
-					_audioSource.clip = _playing.Clip;
-					_audioSource.Play ();
-				}
-				if (_playing != null) {
-					_playing = _playing.Next;
-				}
+				ScreenMessages.PostScreenMessage ("TAWS: Terrain! Pull Up!");
 			}
-			ScreenMessages.PostScreenMessage ("TAWS: Terrain! Pull Up!");
 		}
 
 		/// <summary>
@@ -497,6 +501,11 @@ namespace RATPack
 				RenderingManager.RemoveFromPostDrawQueue (0, OnDraw);
 		}
 
+		[KSPAction("Toggle FLT Radar")]
+		public void ToggleFLTRadar(KSPActionParam param)
+		{
+			fltrRadar = !fltrRadar;
+		}
 	}
 }
 

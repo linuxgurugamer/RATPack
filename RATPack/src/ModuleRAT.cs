@@ -14,6 +14,7 @@ namespace RATPack
 	{
 		const float MAX_CHARGE_RATE = 5f;
 		const float MAX_AIRSPEED = 2000f;
+		const double GRAPH_UPDATE_TIME = 2.0d;
 
 		[KSPField]
 		public float minDensity = 0.001f;
@@ -83,7 +84,8 @@ namespace RATPack
 		private bool 			_maxPowerCurveScale = true;
 		private Graph 			_powerGraph 			= new Graph(500,400);
 		private int 			_winID = 1;
-
+		private double			_partSpeed = 0.0f;
+		private double			_graphUpdateTime = 0.0d;
 		/// <summary>
 		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called
 		///  before OnUpdate or OnFixedUpdate are ever called.
@@ -168,6 +170,12 @@ namespace RATPack
 
 			partSpeed *= orientationFactor;
 			partSpeed *= atmoCurveFit;
+			_partSpeed = partSpeed;
+
+			if (time - _graphUpdateTime > GRAPH_UPDATE_TIME) {
+				DrawPowerGraph ();
+				_graphUpdateTime = time;
+			}
 
 			double curveFit = (double)airspeedCurve.Evaluate ((float)partSpeed);
 
@@ -276,6 +284,8 @@ namespace RATPack
 			GUILayout.Box (_powerGraph.getImage());
 			GUILayout.Label ("Vertical Ticks - 1 EC/s");
 			GUILayout.Label ("Horizontal Ticks - 100 m/s");
+			if (vessel)
+				GUILayout.Label ("Atmosphere Compensation Factor:"+atmosphereCurve.Evaluate ((float)vessel.atmDensity).ToString("F3"));
 			if (_maxPowerCurveScale) {
 				GUILayout.Label ("Showing common scale. Suitable for comparing RATs.");
 			} else {
@@ -323,6 +333,7 @@ namespace RATPack
 				int pos = (int)(vert / increment);
 				_powerGraph.drawVerticalLine (pos, Color.yellow, 10);
 			}
+			_powerGraph.drawVerticalLine ((int)(_partSpeed / increment), Color.green);
 			for (float horiz = 0.0f; horiz < chargeMax; horiz++) {
 				int pos = (int)(horiz * chargeInc);
 				_powerGraph.drawHorizontalLine (pos, Color.cyan, 10);
