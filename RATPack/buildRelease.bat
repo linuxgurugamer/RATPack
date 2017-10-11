@@ -3,7 +3,6 @@
 
 rem Set variables here
 
-set H=R:\KSP_1.3.0_dev
 set GAMEDIR=RATPack
 set LICENSE=LICENSE.md
 set README=README.md
@@ -46,6 +45,6 @@ rem Build the zip FILE
 
 set FILE="%RELEASEDIR%\%GAMEDIR%-%VERSION%.zip"
 IF EXIST %FILE% del /F %FILE%
-%ZIP% a -tzip %FILE% GameData
+%ZIP% a -tzip %FILE%  GameData SHIPS
 
 pause

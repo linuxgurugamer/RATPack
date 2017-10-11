@@ -1,3 +1,8 @@
+0.4.1
+	Update for KSP 1.3.1
+0.4.0
+	Beta release
+
 #0.31
 - LEST now triggers on aerodynamic failure when using FAR.
 #0.30

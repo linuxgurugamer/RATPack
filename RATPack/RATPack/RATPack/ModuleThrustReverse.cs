@@ -120,7 +120,10 @@ namespace RATPack
 					}
 				}
 				foreach (ParticleSystem emit in _emitList) {
-                    emit.enableEmission = false;
+//                    emit.enableEmission = false;
+                    var e = emit.emission;
+                    e.enabled = false;
+
 					emit.Clear ();
 				}
 				if (thrust > 0.0f) {
@@ -208,7 +211,9 @@ namespace RATPack
 			}
 
 			foreach (ParticleSystem emit in _emitList) {
-                emit.enableEmission = false;
+                var e = emit.emission;
+                e.enabled = false;
+                //emit.enableEmission = false;
 				emit.Clear ();
 			}
 
@@ -258,7 +263,9 @@ namespace RATPack
 			}
 
 			foreach (ParticleSystem emit in _emitList) {
-                emit.enableEmission = true;
+                //emit.enableEmission = true;
+                var e = emit.emission;
+                e.enabled = true;
 				emit.Clear ();
 			}
 
