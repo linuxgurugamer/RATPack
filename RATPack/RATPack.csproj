@@ -74,13 +74,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
-start /D D:\Users\jbb\github\RATPack\RATPack /WAIT deploy.bat  $(TargetDir) $(TargetFileName)
+start /D D:\Users\jbb\github\RATPack /WAIT deploy.bat  $(TargetDir) $(TargetFileName)
 
 
 
 if $(ConfigurationName) == Release (
 
-     start /D D:\Users\jbb\github\RATPack\RATPack /WAIT buildRelease.bat $(TargetDir) $(TargetFileName)
+     start /D D:\Users\jbb\github\RATPack /WAIT buildRelease.bat $(TargetDir) $(TargetFileName)
 
 )
 </PostBuildEvent>
