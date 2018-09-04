@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using ModuleWheels;
 
+using ClickThroughFix;
+
 namespace RATPack
 {
 	internal class FlightHistSample
@@ -317,7 +319,7 @@ namespace RATPack
 
 		public void OnDraw()
 		{
-			_windowPos = GUILayout.Window (_winID, _windowPos, OnWindow, "TAWS");
+			_windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, "TAWS");
 		}
 
 		public void OnWindow(int windowID)

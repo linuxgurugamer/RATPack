@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using ClickThroughFix;
+
 namespace RATPack
 {
 	public class ModuleTerrainRadar: PartModule
@@ -85,7 +87,7 @@ namespace RATPack
 		}
 		public void OnDraw()
 		{
-			_windowPos = GUILayout.Window (_winID, _windowPos, OnWindow, "Terrain Radar");
+			_windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, "Terrain Radar");
 		}
 
 		public void OnWindow(int windowID)

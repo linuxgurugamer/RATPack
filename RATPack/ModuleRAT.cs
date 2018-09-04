@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+using ClickThroughFix;
+
 namespace RATPack
 {
 	public class ModuleRAT: PartModule
@@ -265,7 +267,7 @@ namespace RATPack
 
 		public void OnDraw()
 		{
-			_windowPos = GUILayout.Window (_winID, _windowPos, OnWindow, part.partInfo.title);
+			_windowPos = ClickThruBlocker.GUILayoutWindow (_winID, _windowPos, OnWindow, part.partInfo.title);
 			if (_windowPos.Contains (Event.current.mousePosition)) {
 				ControlLock ();
 			} else {
