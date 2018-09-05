@@ -1,8 +1,12 @@
+0.4.2.2
+	Added dependency checking for ClickthroughBlocker
+
 0.4.2.1
 	Updated jenkins config to include Ships directory
 
 0.4.2
 	Updated for KSP 1.4.x
+	Added support for ClickthroughBlocker
 
 0.4.1
 	Update for KSP 1.3.1
