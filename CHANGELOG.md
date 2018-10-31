@@ -1,3 +1,5 @@
+0.4.2.3
+	Version bump for 1.5 rebuild
 0.4.2.2
 	Added dependency checking for ClickthroughBlocker
 
