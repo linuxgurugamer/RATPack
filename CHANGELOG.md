@@ -1,3 +1,6 @@
+0.4.2.5
+	Added whitelist file for new ReStock mod
+
 0.4.2.3
 	Version bump for 1.5 rebuild
 0.4.2.2
