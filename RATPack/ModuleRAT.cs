@@ -408,7 +408,7 @@ namespace RATPack
 			// The charge provider was either not present or had no charge. Request and return charge. If anything responds
 			// we know we have power. We'll find a new charge provider on the next call.
 			bool result = false;
-			double avail = part.RequestResource ("ElectricCharge", 0.1f);
+			double avail = part.RequestResource ("ElectricCharge", (double)0.1f);
 			if (avail > 0.0f) {
 				result = true;
 				part.RequestResource("ElectricCharge", -avail);

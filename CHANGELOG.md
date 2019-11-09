@@ -1,3 +1,10 @@
+ChangeLog
+
+0.4.3
+	Updated AssemblyVersion.tt
+	Added installChecker
+	Updated for 1.8
+
 0.4.2.5
 	Added whitelist file for new ReStock mod
 
