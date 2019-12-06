@@ -51,28 +51,17 @@ namespace RATPack
 		[KSPField]
 		public string transformName = "";
 
-		/// <summary>
-		/// The airspeed curve. Determines how much charge we get at a given indicated airspeed.
-		/// </summary>
-		[KSPField]
-		public FloatCurve airspeedCurve = new FloatCurve(new Keyframe[]
-			{
-				new Keyframe(0.0f,0.0f,0.0f,0.0f),
-				new Keyframe(1.0f,0.1f,0.0f,0.0f),
-				new Keyframe(100.0f,1.0f,0.0f,0.0f),
-				new Keyframe(1600.0f,0.1f,0.0f,0.0f)
-			});
-		/// <summary>
-		/// The atmosphere curve. Determines how much we change the charge based on atmosphere.
-		/// </summary>
-		[KSPField]
-		public FloatCurve atmosphereCurve = new FloatCurve(new Keyframe[]
-			{
-				new Keyframe(0.0f,0.0f,0.0f,0.0f),
-				new Keyframe(0.00005f,0.0f,0.0f,0.0f),
-				new Keyframe(0.1f,0.3f,0.0f,1.2f),
-				new Keyframe(1.0f,1.0f,0.0f,0.0f),
-			});
+        /// <summary>
+        /// The airspeed curve. Determines how much charge we get at a given indicated airspeed.
+        /// </summary>
+        [KSPField]
+        public FloatCurve airspeedCurve;
+
+        /// <summary>
+        /// The atmosphere curve. Determines how much we change the charge based on atmosphere.
+        /// </summary>
+        [KSPField]
+        public FloatCurve atmosphereCurve;
 
 		private double 			_lastTime = 0.0d;
 		private bool 			_deploying = false;
@@ -80,20 +69,42 @@ namespace RATPack
 		private AnimationState 	_deployAnim = null;
 		private Animation 		_animation = null;
 		private Part			_chargeProvider = null;
-		private List<Transform> _chargeTransform = new List<Transform>();
-		private Rect 			_windowPos = new Rect();
+        private List<Transform> _chargeTransform;
+		private Rect 			_windowPos;
 		private bool 			_powerCurveView = false;
 		private bool 			_maxPowerCurveScale = true;
-		private Graph 			_powerGraph 			= new Graph(500,400);
+        private Graph _powerGraph;
 		private int 			_winID = 1;
 		private double			_partSpeed = 0.0f;
 		private double			_graphUpdateTime = 0.0d;
-		/// <summary>
-		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called
-		///  before OnUpdate or OnFixedUpdate are ever called.
-		/// </summary>
-		/// <param name="state">Some information about what situation the vessel is starting in.</param>
-		public override void OnStart(StartState state)
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+            _chargeTransform = new List<Transform>();
+            atmosphereCurve = new FloatCurve(new Keyframe[]
+            {
+                new Keyframe(0.0f,0.0f,0.0f,0.0f),
+                new Keyframe(0.00005f,0.0f,0.0f,0.0f),
+                new Keyframe(0.1f,0.3f,0.0f,1.2f),
+                new Keyframe(1.0f,1.0f,0.0f,0.0f),
+            });
+            airspeedCurve = new FloatCurve(new Keyframe[]
+            {
+                new Keyframe(0.0f,0.0f,0.0f,0.0f),
+                new Keyframe(1.0f,0.1f,0.0f,0.0f),
+                new Keyframe(100.0f,1.0f,0.0f,0.0f),
+                new Keyframe(1600.0f,0.1f,0.0f,0.0f)
+            });
+            _windowPos = new Rect();
+            _powerGraph = new Graph(500, 400);
+        }
+        /// <summary>
+        /// Called when the flight starts, or when the part is created in the editor. OnStart will be called
+        ///  before OnUpdate or OnFixedUpdate are ever called.
+        /// </summary>
+        /// <param name="state">Some information about what situation the vessel is starting in.</param>
+        public override void OnStart(StartState state)
 		{
 			_animation = part.FindModelComponent<Animation>();
 			if (_animation != null && generatorAnimation.Length > 0) {

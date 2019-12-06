@@ -158,7 +158,7 @@ namespace RATPack
 		private AudioSource 			_audioSource = null;
 		private double 					_prevTime = 0.0d;
 		private List<FlightHistSample> 	_flightHist = new List<FlightHistSample> ();
-		private Texture2D				_radar = new Texture2D(400,400);
+		private Texture2D				_radar;
 		private Rect 					_windowPos = new Rect();
 		private Transform 				_transform = null;
 		private bool 					_radarVisible = false;
@@ -173,12 +173,18 @@ namespace RATPack
 			new TAWSPreset(10f,800f,600f,2.0f, 2.0f,"Fearless"),
 			new TAWSPreset(10f,500f,500f,3.0f, 1.0f, "Widowmaker"),
 		};
-		/// <summary>
-		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called
-		///  before OnUpdate or OnFixedUpdate are ever called.
-		/// </summary>
-		/// <param name="state">Some information about what situation the vessel is starting in.</param>
-		public override void OnStart(StartState state)
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+            _radar = new Texture2D(400, 400);
+        }
+        /// <summary>
+        /// Called when the flight starts, or when the part is created in the editor. OnStart will be called
+        ///  before OnUpdate or OnFixedUpdate are ever called.
+        /// </summary>
+        /// <param name="state">Some information about what situation the vessel is starting in.</param>
+        public override void OnStart(StartState state)
 		{
 			_audioSource = gameObject.AddComponent<AudioSource> ();
 			if (terrainAudio != null && terrainAudio.sound == null) {
