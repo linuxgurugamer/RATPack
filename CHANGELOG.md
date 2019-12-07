@@ -1,5 +1,8 @@
 ChangeLog
 
+0.4.3.2
+	Rebuild to fix a bad packaging job
+	
 0.4.3.1
 	Updated initialization of vars to account for new Unity version used with KSP 1.8
 
