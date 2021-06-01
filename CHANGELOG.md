@@ -1,5 +1,8 @@
 ChangeLog
 
+0.4.3.3
+	Fixed bad effects when deactivating a thrust reverser, in 1.11.2
+
 0.4.3.2
 	Rebuild to fix a bad packaging job
 	
