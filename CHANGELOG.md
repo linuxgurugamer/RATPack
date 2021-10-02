@@ -1,5 +1,9 @@
 ChangeLog
 
+0.4.3.4
+	Added AssemblyFileVersion
+	Updated version file for 1.12
+
 0.4.3.3
 	Fixed bad effects when deactivating a thrust reverser, in 1.11.2
 
