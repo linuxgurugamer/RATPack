@@ -1,9 +1,10 @@
-﻿/*
+/*
  * Copyright 2015 SatNet
  * 
  * This file is subject to the included LICENSE.md file. 
  */
 
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,7 +27,7 @@ namespace RATPack
 	public class ModuleLESTrigger: PartModule
 	{
 		[KSPField(isPersistant=true,guiActive=true,guiActiveEditor=true,guiName="Auto Abort:"),
-			UI_Toggle(disabledText="Inactive",enabledText="Active")]
+			UI_Toggle(disabledText="#LOC_RAT_1",enabledText="#LOC_RAT_2")]
 		public bool autoAbort = true;
 		/// <summary>
 		/// Called when the flight starts, or when the part is created in the editor. OnStart will be called

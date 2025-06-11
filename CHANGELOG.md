@@ -1,5 +1,9 @@
 ChangeLog
 
+0.4.4
+	Updated version file to use github for new version info
+	Localization of mod
+
 0.4.3.4
 	Added AssemblyFileVersion
 	Updated version file for 1.12

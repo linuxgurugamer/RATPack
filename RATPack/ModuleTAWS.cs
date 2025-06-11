@@ -1,9 +1,10 @@
-﻿/*
+/*
  * Copyright 2015 SatNet
  * 
  * This file is subject to the included LICENSE.md file. 
  */
 
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -121,11 +122,11 @@ namespace RATPack
 		public float radarDistance;
 
 		[KSPField(isPersistant=true,guiActive=true,guiActiveEditor=true,guiName="Audio Alert:"),
-			UI_Toggle(disabledText="Silent",enabledText="Active")]
+			UI_Toggle(disabledText="#LOC_RAT_26",enabledText="#LOC_RAT_2")]
 		public bool audioOutput = true;
 
 		[KSPField(isPersistant=true,guiActive=true,guiActiveEditor=true,guiName="FLT Radar:"),
-			UI_Toggle(disabledText="Disabled",enabledText="Enabled")]
+			UI_Toggle(disabledText="#LOC_RAT_27",enabledText="#LOC_RAT_28")]
 		public bool fltrRadar = true;
 
 		[KSPField(isPersistant=true,guiActiveEditor=true,guiActive=true,guiName="Landing Speed"),
@@ -149,7 +150,7 @@ namespace RATPack
 		public float landingTolerance = 1.5f;
 
 		[KSPField(guiActive=true,guiActiveEditor=true,guiName="Preset")]
-		public string presetString = "Default";
+		public string presetString = "#LOC_RAT_29";
 
 		[KSPField]
 		public  AudioSequence 			terrainAudio = new AudioSequence();
@@ -166,12 +167,12 @@ namespace RATPack
 		private double 					_horizontalDir = 1.0d;
 		private bool					_warningActive = false;
 		private double 					_warningTime = 0d;
-		private TAWSPreset				_current = new TAWSPreset(0f,0f,0f,0f,0f,"Current");
+		private TAWSPreset				_current = new TAWSPreset(0f,0f,0f,0f,0f,Localizer.Format("#LOC_RAT_30"));
 		private List<TAWSPreset> _presets = new List<TAWSPreset> {
-			new TAWSPreset(10f,1000f,200f,1.2f,4.0f,"Safety First"), 
-			new TAWSPreset(10f,1000f,400f,1.5f,2.0f,"Default"),
-			new TAWSPreset(10f,800f,600f,2.0f, 2.0f,"Fearless"),
-			new TAWSPreset(10f,500f,500f,3.0f, 1.0f, "Widowmaker"),
+			new TAWSPreset(10f,1000f,200f,1.2f,4.0f,Localizer.Format("#LOC_RAT_31")), 
+			new TAWSPreset(10f,1000f,400f,1.5f,2.0f,Localizer.Format("#LOC_RAT_29")),
+			new TAWSPreset(10f,800f,600f,2.0f, 2.0f,Localizer.Format("#LOC_RAT_32")),
+			new TAWSPreset(10f,500f,500f,3.0f, 1.0f, Localizer.Format("#LOC_RAT_33")),
 		};
 
         public override void OnAwake()
@@ -198,8 +199,8 @@ namespace RATPack
 
 			_prevTime = Planetarium.GetUniversalTime () + 2.0d;
 			if (!forwardLookingRadar) {
-				Fields ["fltrRadar"].guiActive = false;
-				Fields ["fltrRadar"].guiActiveEditor = false;
+				Fields [Localizer.Format("#LOC_RAT_34")].guiActive = false;
+				Fields [Localizer.Format("#LOC_RAT_34")].guiActiveEditor = false;
 				fltrRadar = false;
 			}
 
@@ -229,7 +230,7 @@ namespace RATPack
 
 			TAWSPreset taws = _presets.Find (preset => preset.Equals (_current));
 			if (taws == null) {
-				presetString = "Custom";
+				presetString = Localizer.Format("#LOC_RAT_35");
 			} else {
 				presetString = taws.Title;
 			}
@@ -252,7 +253,7 @@ namespace RATPack
 				_prevTime = ut;
 				FlightHistSample sample = new FlightHistSample (vessel);
 				if (fltrRadar && radarAltitude <  warnAltitudeMax * 1.2f && vessel.situation != Vessel.Situations.LANDED) {
-					part.RequestResource ("ElectricCharge", deltaTime * fltrChargeRate);
+					part.RequestResource (Localizer.Format("#LOC_RAT_6"), deltaTime * fltrChargeRate);
 					sample.RadarContact = ForwardRadar (Math.PI / 4);
 				}
 				radarDistance = sample.RadarContact;
@@ -325,7 +326,7 @@ namespace RATPack
 
 		public void OnDraw()
 		{
-			_windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, "TAWS");
+			_windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, Localizer.Format("#LOC_RAT_36"));
 		}
 
 		public void OnWindow(int windowID)
@@ -333,10 +334,10 @@ namespace RATPack
 			GUILayout.BeginVertical (GUILayout.Width(500.0f),GUILayout.Height(410.0f));
 			GUILayout.Box (_radar);
 			GUILayout.BeginHorizontal ();
-			if (GUILayout.Button ("Flip Horizontal")) {
+			if (GUILayout.Button (Localizer.Format("#LOC_RAT_37"))) {
 				_horizontalDir *= -1.0d;
 			}
-			if (GUILayout.Button ("Close")) {
+			if (GUILayout.Button (Localizer.Format("#LOC_RAT_15"))) {
 				ToggleViewRadar ();
 			}
 			GUILayout.EndHorizontal ();
@@ -373,7 +374,7 @@ namespace RATPack
 						_playing = _playing.next;
 					}
 				}
-				ScreenMessages.PostScreenMessage ("TAWS: Terrain! Pull Up!");
+				ScreenMessages.PostScreenMessage (Localizer.Format("#LOC_RAT_38"));
 			}
 		}
 
@@ -469,8 +470,8 @@ namespace RATPack
 		public override string GetInfo ()
 		{
 
-			return "Forward Looking Terrain Radar:"+(forwardLookingRadar ? "Yes" : "No") + "\n"+
-				"Terrain Radar Electric Charge:"+fltrChargeRate+"\n";
+			return Localizer.Format("#LOC_RAT_39")+(forwardLookingRadar ? Localizer.Format("#LOC_RAT_40") : Localizer.Format("#LOC_RAT_41")) + "\n"+
+				Localizer.Format("#LOC_RAT_42")+fltrChargeRate+"\n";
 		}
 		[KSPEvent(guiActive=true,guiActiveEditor=true,guiName="Next Preset")]
 		public void NextPreset()

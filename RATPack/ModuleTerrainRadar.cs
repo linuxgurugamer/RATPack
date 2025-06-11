@@ -1,4 +1,5 @@
-﻿using System;
+using KSP.Localization;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ namespace RATPack
         [KSPField(isPersistant = true)]
         public int scanMode = 0;
         [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Ping:"),
-            UI_Toggle(disabledText = "Silent", enabledText = "Active")]
+            UI_Toggle(disabledText = "#LOC_RAT_26", enabledText = "#LOC_RAT_2")]
         public bool audioOutput = false;
         [KSPField]
         public FloatCurve altitudeCurve = new FloatCurve(new Keyframe[]
@@ -98,7 +99,7 @@ namespace RATPack
         }
         public void OnDraw()
         {
-            _windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, "Terrain Radar");
+            _windowPos = ClickThruBlocker.GUILayoutWindow(_winID, _windowPos, OnWindow, Localizer.Format("#LOC_RAT_43"));
         }
 
         public void OnWindow(int windowID)
@@ -109,13 +110,13 @@ namespace RATPack
             GUILayout.Box(_scaleGraph, GUILayout.Width(_scaleGraph.width + 10));
             GUILayout.EndHorizontal();
             GUILayout.Box(_terrainLateral, GUILayout.Width(_terrainLateral.width + 10));
-            GUILayout.Label("Max Distance:" + _max.ToString("F2") + " m");
-            GUILayout.Label("Min Distance:" + _min.ToString("F2") + " m");
-            GUILayout.Label("Reference Distance:" + _reference.ToString("F2") + " m");
+            GUILayout.Label(Localizer.Format("#LOC_RAT_44") + _max.ToString("F2") + Localizer.Format("#LOC_RAT_45"));
+            GUILayout.Label(Localizer.Format("#LOC_RAT_46") + _min.ToString("F2") + Localizer.Format("#LOC_RAT_45"));
+            GUILayout.Label(Localizer.Format("#LOC_RAT_47") + _reference.ToString("F2") + Localizer.Format("#LOC_RAT_45"));
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Scale");
+            GUILayout.Label(Localizer.Format("#LOC_RAT_48"));
             int scaleModeSelect = GUILayout.SelectionGrid(scaleMode,
-                new string[] { "Auto", "1 m", "5 m", "10 m", "25 m", "50 m" }, 6);
+                new string[] { Localizer.Format("#LOC_RAT_49"), Localizer.Format("#LOC_RAT_50"), Localizer.Format("#LOC_RAT_51"), Localizer.Format("#LOC_RAT_52"), Localizer.Format("#LOC_RAT_53"), Localizer.Format("#LOC_RAT_54") }, 6);
             if (scaleMode != scaleModeSelect)
             {
                 scaleMode = scaleModeSelect;
@@ -144,9 +145,9 @@ namespace RATPack
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Reference Mode");
+            GUILayout.Label(Localizer.Format("#LOC_RAT_55"));
             int referenceModeSelect = GUILayout.SelectionGrid(referenceMode,
-                new string[] { "Lowest Point", "Sea Level", "Center" }, 3);
+                new string[] { Localizer.Format("#LOC_RAT_56"), Localizer.Format("#LOC_RAT_57"), Localizer.Format("#LOC_RAT_58") }, 3);
             if (referenceMode != referenceModeSelect)
             {
                 referenceMode = referenceModeSelect;
@@ -166,9 +167,9 @@ namespace RATPack
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Radius: " + scanRadius.ToString("F0"));
+            GUILayout.Label(Localizer.Format("#LOC_RAT_59") + scanRadius.ToString("F0"));
             float radius = GUILayout.HorizontalSlider(scanRadius, 10f, 1000f);
-            if (GUILayout.Button("100 m"))
+            if (GUILayout.Button(Localizer.Format("#LOC_RAT_60")))
             {
                 radius = 100f;
             }
@@ -180,9 +181,9 @@ namespace RATPack
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Orientation:");
+            GUILayout.Label(Localizer.Format("#LOC_RAT_61"));
             int scanModeSelect = GUILayout.SelectionGrid(scanMode,
-                               new string[] { "Ground", "Part" }, 5);
+                               new string[] { Localizer.Format("#LOC_RAT_62"), Localizer.Format("#LOC_RAT_63") }, 5);
             if (scanMode != scanModeSelect)
             {
                 scanMode = scanModeSelect;
@@ -198,7 +199,7 @@ namespace RATPack
             }
 
             GUILayout.EndHorizontal();
-            if (GUILayout.Button("Close"))
+            if (GUILayout.Button(Localizer.Format("#LOC_RAT_15")))
             {
                 ToggleViewRadar();
             }

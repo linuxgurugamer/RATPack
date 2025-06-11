@@ -1,9 +1,10 @@
-﻿/*
+/*
  * Copyright 2015 SatNet
  * 
  * This file is subject to the included LICENSE.md file. 
  */
 
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace RATPack
     {
 
         [KSPField]
-        public string deployAnimation = "Deploy";
+        public string deployAnimation = "#LOC_RAT_4";
 
         [KSPField(isPersistant = true, guiActive = true, guiName = "Active")]
         public bool deployed = false;
@@ -23,16 +24,16 @@ namespace RATPack
         public float effectiveThrust = 0.0f;
 
         [KSPField]
-        public string thrustTransformName = "thrustTransform";
+        public string thrustTransformName = "#LOC_RAT_64";
 
         [KSPField]
         public float thrustModifier = 0.5f;
 
         [KSPField]
-        public string reversingEffect = "running_thrust";
+        public string reversingEffect = "#LOC_RAT_65";
 
         [KSPField(guiActive = true, guiName = "Engine", guiActiveEditor = true)]
-        public string engineName = "None";
+        public string engineName = "#LOC_RAT_66";
 
         private AnimationState _deployAnim = null;
         private Animation _animation = null;
@@ -80,7 +81,7 @@ namespace RATPack
         private void UpdateEngineLink()
         {
             _engine = null;
-            engineName = "None";
+            engineName = Localizer.Format("#LOC_RAT_66");
             foreach (Part child in part.children)
             {
                 foreach (PartModule pm in child.Modules)

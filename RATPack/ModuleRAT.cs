@@ -1,9 +1,10 @@
-﻿/*
+/*
  * Copyright 2015 SatNet
  * 
  * This file is subject to the included LICENSE.md file. 
  */
 
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,10 +26,10 @@ namespace RATPack
 		public float chargeRate = 1.0f;
 
 		[KSPField]
-		public string generatorAnimation = "Generate";
+		public string generatorAnimation = "#LOC_RAT_3";
 
 		[KSPField]
-		public string deployAnimation = "Deploy";
+		public string deployAnimation = "#LOC_RAT_4";
 
 		[KSPField(isPersistant=true,guiActive=true,guiName="RAT Active")]
 		public bool deployed = false;
@@ -43,7 +44,7 @@ namespace RATPack
 		public float chargePerSec = 1.0f;
 
 		[KSPField(guiActive=true,guiName="Blocked",guiActiveEditor=true)]
-		public string blocked="False";
+		public string blocked="#LOC_RAT_5";
 
 		[KSPField]
 		public float generatorAnimationSpeed = 5.0f;
@@ -151,7 +152,7 @@ namespace RATPack
 			}
 			if (managePartCharge) {
 				foreach (PartResource res in part.Resources) {
-					if (res.info.name == "ElectricCharge" && res.amount == res.maxAmount && HasElectricCharge()) {
+					if (res.info.name == Localizer.Format("#LOC_RAT_6") && res.amount == res.maxAmount && HasElectricCharge()) {
 						res.flowState = false;
 					}
 				}
@@ -207,7 +208,7 @@ namespace RATPack
 					chargePerSec = (float)(chargeRate * chargePct);
 					if (chargePerSec > 0.0f) {
 						double charge = chargePerSec * (deltaTime);
-						part.RequestResource ("ElectricCharge", -charge);
+						part.RequestResource (Localizer.Format("#LOC_RAT_6"), -charge);
 					}
 				} else if (!_deploying && autoDeploy && vessel.atmDensity > minDensity && !HasElectricCharge ()) {
 					Debug.Log ("AutoDeploy RAT");
@@ -252,9 +253,9 @@ namespace RATPack
 
 			if (count > 0d) {
 				factor = Math.Log10(total / count * 9.0d + 1.0d);
-				blocked = ((1.0f - factor) * 100.0f).ToString("F2") + "% by " + hitobj;
+				blocked = ((1.0f - factor) * 100.0f).ToString("F2") + Localizer.Format("#LOC_RAT_7") + hitobj;
 			} else {
-				blocked = "False";
+				blocked = Localizer.Format("#LOC_RAT_5");
 			}
 
 			return factor;
@@ -265,7 +266,7 @@ namespace RATPack
 		/// </summary>
 		private void ControlLock()
 		{
-			InputLockManager.SetControlLock (ControlTypes.EDITOR_SOFT_LOCK, "ModuleRAT");
+			InputLockManager.SetControlLock (ControlTypes.EDITOR_SOFT_LOCK, Localizer.Format("#LOC_RAT_8"));
 		}
 
 		/// <summary>
@@ -273,7 +274,7 @@ namespace RATPack
 		/// </summary>
 		private void ControlUnlock()
 		{
-			InputLockManager.RemoveControlLock("ModuleRAT");
+			InputLockManager.RemoveControlLock(Localizer.Format("#LOC_RAT_8"));
 		}
 
 		public void OnDraw()
@@ -293,23 +294,23 @@ namespace RATPack
 		public void OnWindow(int windowID)
 		{
 			GUILayout.BeginVertical (GUILayout.Width(500.0f),GUILayout.Height(410.0f));
-			GUILayout.Label ("Electric Charge / second vs. Airspeed");
+			GUILayout.Label (Localizer.Format("#LOC_RAT_9"));
 			GUILayout.Box (_powerGraph.getImage());
-			GUILayout.Label ("Vertical Ticks - 1 EC/s");
-			GUILayout.Label ("Horizontal Ticks - 100 m/s");
+			GUILayout.Label (Localizer.Format("#LOC_RAT_10"));
+			GUILayout.Label (Localizer.Format("#LOC_RAT_11"));
 			if (vessel)
-				GUILayout.Label ("Atmosphere Compensation Factor:"+atmosphereCurve.Evaluate ((float)vessel.atmDensity).ToString("F3"));
+				GUILayout.Label (Localizer.Format("#LOC_RAT_12")+atmosphereCurve.Evaluate ((float)vessel.atmDensity).ToString("F3"));
 			if (_maxPowerCurveScale) {
-				GUILayout.Label ("Showing common scale. Suitable for comparing RATs.");
+				GUILayout.Label (Localizer.Format("#LOC_RAT_13"));
 			} else {
-				GUILayout.Label ("Showing fit scale. Minimum for showing this one RAT.");
+				GUILayout.Label (Localizer.Format("#LOC_RAT_14"));
 			}
 			GUILayout.BeginHorizontal ();
 
-			if (GUILayout.Button ("Close")) {
+			if (GUILayout.Button (Localizer.Format("#LOC_RAT_15"))) {
 				TogglePowerCurve ();
 			}
-			if (GUILayout.Button (_maxPowerCurveScale ? "Fit Scale" : "Common Scale")) {
+			if (GUILayout.Button (_maxPowerCurveScale ? Localizer.Format("#LOC_RAT_16") : Localizer.Format("#LOC_RAT_17"))) {
 				_maxPowerCurveScale = !_maxPowerCurveScale;
 				DrawPowerGraph ();
 			}
@@ -390,7 +391,7 @@ namespace RATPack
 			if (_chargeProvider == null) {
 				foreach (Part vpart in vessel.parts) {
 					foreach (PartResource res in vpart.Resources) {
-						if (res.info.name == "ElectricCharge")
+						if (res.info.name == Localizer.Format("#LOC_RAT_6"))
 						{
 							if (res.flowState && res.amount > 0.1f) {
 								_chargeProvider = vpart;
@@ -404,7 +405,7 @@ namespace RATPack
 			// If we have a cached charge provider check if it still has charge.
 			if (_chargeProvider != null && vessel.parts.Contains (_chargeProvider)) {
 				foreach (PartResource res in _chargeProvider.Resources) {
-					if (res.info.name == "ElectricCharge") {
+					if (res.info.name == Localizer.Format("#LOC_RAT_6")) {
 						if (res.flowState && res.amount > 0.1f) {
 							return true;
 						} else {
@@ -419,10 +420,10 @@ namespace RATPack
 			// The charge provider was either not present or had no charge. Request and return charge. If anything responds
 			// we know we have power. We'll find a new charge provider on the next call.
 			bool result = false;
-			double avail = part.RequestResource ("ElectricCharge", (double)0.1f);
+			double avail = part.RequestResource (Localizer.Format("#LOC_RAT_6"), (double)0.1f);
 			if (avail > 0.0f) {
 				result = true;
-				part.RequestResource("ElectricCharge", -avail);
+				part.RequestResource(Localizer.Format("#LOC_RAT_6"), -avail);
 			}
 			return result;
 		}
@@ -443,7 +444,7 @@ namespace RATPack
 			}
 			if (managePartCharge) {
 				foreach (PartResource res in part.Resources) {
-					if (res.info.name == "ElectricCharge") {
+					if (res.info.name == Localizer.Format("#LOC_RAT_6")) {
 						res.flowState = true;
 					}
 				}
@@ -481,10 +482,10 @@ namespace RATPack
 			float tmax = 0.0f;
 			airspeedCurve.FindMinMaxValue (out min, out max, out tmin, out tmax);
 
-			return "Charge Rate: "+chargeRate+"/sec (Max)\n"+
-				"Activates: "+ (autoDeploy ? "Automatically" : "Manually")+"\n"+
-				"Peak Charging@ "+tmax+" m/s (ASL)\n"+
-				(managePartCharge ? "Keeps local power in reserve." : "");
+			return Localizer.Format("#LOC_RAT_18")+chargeRate+Localizer.Format("#LOC_RAT_19")+
+				Localizer.Format("#LOC_RAT_20")+ (autoDeploy ? Localizer.Format("#LOC_RAT_21") : Localizer.Format("#LOC_RAT_22"))+"\n"+
+				Localizer.Format("#LOC_RAT_23")+tmax+Localizer.Format("#LOC_RAT_24")+
+				(managePartCharge ? Localizer.Format("#LOC_RAT_25") : "");
 		}
 
 		/// <summary>

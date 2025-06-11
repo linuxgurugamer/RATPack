@@ -1,9 +1,10 @@
-﻿/*
+/*
  * Copyright 2015 SatNet
  * 
  * This file is subject to the included LICENSE.md file. 
  */
 
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,29 +34,29 @@ namespace RATPack
 		/// </summary>
 		public void Categorize()
 		{
-			Texture imgBlack = (Texture)GameDatabase.Instance.GetTexture ("RATPack/Textures/raticon", false);
-			Texture imgWhite = (Texture)GameDatabase.Instance.GetTexture ("RATPack/Textures/raticon_white", false);
-			Icon icon = new Icon ("RAT", imgBlack, imgWhite);
+			Texture imgBlack = (Texture)GameDatabase.Instance.GetTexture (Localizer.Format("#LOC_RAT_67"), false);
+			Texture imgWhite = (Texture)GameDatabase.Instance.GetTexture (Localizer.Format("#LOC_RAT_68"), false);
+			Icon icon = new Icon (Localizer.Format("#LOC_RAT_69"), imgBlack, imgWhite);
 
-			Icon rats = PartCategorizer.Instance.iconLoader.GetIcon ("R&D_node_icon_advelectrics");
-			Icon thrustReverse = PartCategorizer.Instance.iconLoader.GetIcon ("RDicon_aerospaceTech2");
-			Icon taws = PartCategorizer.Instance.iconLoader.GetIcon ("R&D_node_icon_highaltitudeflight");
+			Icon rats = PartCategorizer.Instance.iconLoader.GetIcon (Localizer.Format("#LOC_RAT_70"));
+			Icon thrustReverse = PartCategorizer.Instance.iconLoader.GetIcon (Localizer.Format("#LOC_RAT_71"));
+			Icon taws = PartCategorizer.Instance.iconLoader.GetIcon (Localizer.Format("#LOC_RAT_72"));
 
-			PartCategorizer.Category cat = PartCategorizer.AddCustomFilter ("RATPack", "RATPack", icon, Color.gray);
+			PartCategorizer.Category cat = PartCategorizer.AddCustomFilter (Localizer.Format("#LOC_RAT_73"), Localizer.Format("#LOC_RAT_73"), icon, Color.gray);
 			cat.displayType = EditorPartList.State.PartsList;
 
 			// All of the parts.
-			PartCategorizer.AddCustomSubcategoryFilter (cat, "RATPack", "RATPack", icon, p => p.manufacturer.Contains ("SatNet"));
+			PartCategorizer.AddCustomSubcategoryFilter (cat, Localizer.Format("#LOC_RAT_73"), Localizer.Format("#LOC_RAT_73"), icon, p => p.manufacturer.Contains (Localizer.Format("#LOC_RAT_74")));
 
 			// Rats.
-			PartCategorizer.AddCustomSubcategoryFilter (cat, "RATs", "RATs", rats, p => p.moduleInfos.Exists(m=>m.moduleName.Contains("RAT")));
+			PartCategorizer.AddCustomSubcategoryFilter (cat, Localizer.Format("#LOC_RAT_75"), Localizer.Format("#LOC_RAT_75"), rats, p => p.moduleInfos.Exists(m=>m.moduleName.Contains(Localizer.Format("#LOC_RAT_69"))));
 
 			// Find TRs via title because module name doesn't seem to work.
-			PartCategorizer.AddCustomSubcategoryFilter (cat, "Thrust Reversers", "Thrust Reversers", thrustReverse, p => p.title.Contains("Thrust Reverse"));
+			PartCategorizer.AddCustomSubcategoryFilter (cat, Localizer.Format("#LOC_RAT_76"), Localizer.Format("#LOC_RAT_76"), thrustReverse, p => p.title.Contains(Localizer.Format("#LOC_RAT_77")));
 
 			// TAWS.
-			PartCategorizer.AddCustomSubcategoryFilter (cat, "TAWS", "TAWS", taws, 
-				p => p.moduleInfos.Exists(m=>(m.moduleName.Contains("TAWS")))||p.title.Contains("Terrain Radar") );
+			PartCategorizer.AddCustomSubcategoryFilter (cat, Localizer.Format("#LOC_RAT_36"), Localizer.Format("#LOC_RAT_36"), taws, 
+				p => p.moduleInfos.Exists(m=>(m.moduleName.Contains(Localizer.Format("#LOC_RAT_36"))))||p.title.Contains(Localizer.Format("#LOC_RAT_43")) );
 		}
 	}
 }
